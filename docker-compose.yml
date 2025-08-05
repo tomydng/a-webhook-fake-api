@@ -1,22 +1,4 @@
-version: '3.8'
-
 services:
-  mongodb:
-    image: mongo:7
-    container_name: webhook_mongodb
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: webhook_db
-    volumes:
-      - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    networks:
-      - webhook_network
-
   api:
     build: .
     container_name: webhook_api
@@ -24,16 +6,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      MONGODB_URL: mongodb://admin:password123@mongodb:27017/webhook_db?authSource=admin
-      DATABASE_NAME: webhook_db
-      COLLECTION_NAME: webhook_requests
-    depends_on:
-      - mongodb
+      - MONGODB_URL
+      - DATABASE_NAME
+      - COLLECTION_NAME
     networks:
       - webhook_network
-
-volumes:
-  mongodb_data:
 
 networks:
   webhook_network:
