@@ -144,8 +144,19 @@ async def catch_all_webhook(request: Request, path: str = ""):
             "logged_id": str(result.inserted_id),
         }
 
+    except HTTPException as http_exc:
+        # Re-raise HTTPException (401, 404, etc) without wrapping
+        print(f"HTTP Exception in webhook: {http_exc.status_code} - {http_exc.detail}")
+        raise http_exc
     except Exception as e:
+        # Log detailed error information
+        import traceback
+
+        error_details = traceback.format_exc()
         print(f"Error processing webhook: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Full traceback:\n{error_details}")
+
         raise HTTPException(
             status_code=500, detail=f"Error processing webhook: {str(e)}"
         )
