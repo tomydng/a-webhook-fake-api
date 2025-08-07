@@ -64,6 +64,14 @@ async def catch_all_webhook(request: Request, path: str = ""):
     Logs all request details to MongoDB
     """
     try:
+        if request.method == "GET":
+            # For GET requests, we can return a simple message
+            return {
+                "status": "success",
+                "message": f"GET request received for path: {path}",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+
         # Check token for webhook-with-token path
         if path == "webhook-with-token":
             x_signature = request.headers.get("x-signature")
