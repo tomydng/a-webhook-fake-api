@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 import os
+import hashlib
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -63,6 +64,27 @@ async def catch_all_webhook(request: Request, path: str = ""):
     Logs all request details to MongoDB
     """
     try:
+        # Check token for webhook-with-token path
+        if path == "webhook-with-token":
+            x_signature = request.headers.get("x-signature")
+            if not x_signature:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Missing X-Signature header for webhook-with-token endpoint",
+                )
+
+            # Generate expected signature
+            secret_key = "asilla"
+            expected_signature = hashlib.sha256(secret_key.encode()).hexdigest()
+
+            # Compare signatures
+            if x_signature != expected_signature:
+                raise HTTPException(
+                    status_code=401, detail="Invalid signature. Authentication failed."
+                )
+
+            print(f"Token validation successful for path: {path}")
+
         # Get request body
         body = None
         content_type = request.headers.get("content-type", "")
